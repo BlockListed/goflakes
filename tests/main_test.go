@@ -5,15 +5,23 @@ import (
 	"time"
 
 	"github.com/blocklisted/goflakes"
+	"github.com/blocklisted/goflakes/mock"
 )
 
-var TimeEpoch, parseerror = time.Parse(time.RFC3339, "2022-01-01T0:00:00Z")
+var TimeEpoch = time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC)
 var SnowflakeGenerator, snowerror = goflakes.NewSnowflakeGenerator(TimeEpoch, 0b1000000000)
 
+func TestConstantsAndComputeFunction(t *testing.T) {
+	return
+}
+
 func TestGenerate(t *testing.T) {
+	currenttime := time.Date(2022, 6, 9, 6, 9, 6, 9, time.UTC)
+	mock.MockTimeNow = mock.CurryMockTimeNow(currenttime)
+	SnowflakeGenerator.ResetGenerated()
 	v, f := SnowflakeGenerator.Generate()
 	if f != nil {
-		t.Errorf("%v, %v, %v, %v", f, TimeEpoch, parseerror, snowerror)
+		t.Errorf("%v, %v, %v", f, TimeEpoch, snowerror)
 	}
 	t.Logf("%v", v)
 	return
