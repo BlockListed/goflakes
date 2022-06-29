@@ -12,7 +12,7 @@ func CurryMockTimeNow(t time.Time) TimeNow {
 	}
 }
 
-func Time_now() time.Time {
+func Time_Now() time.Time {
 	if MockTimeNow != nil {
 		return MockTimeNow()
 	} else {
