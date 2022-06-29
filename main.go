@@ -26,17 +26,17 @@ const (
 	sequenceLength          = 12
 	timestapShift           = idLength - timestampLength
 	instanceShift           = timestapShift - instanceLength
-	latestStorableTime      = (1 << timestampLength) - 1
-	biggestStorableInstance = (1 << instanceLength) - 1
+	LatestStorableTime      = (1 << timestampLength) - 1
+	BiggestStorableInstance = (1 << instanceLength) - 1
 	biggestStorableSequence = (1 << sequenceLength) - 1
 	resetSequence           = 1 << sequenceLength
 )
 
 func NewSnowflakeGenerator(epoch time.Time, instance int64) (SnowflakeGenerator, error) {
-	if epoch.UnixMilli() > latestStorableTime {
+	if epoch.UnixMilli() > LatestStorableTime {
 		return SnowflakeGenerator{}, fmt.Errorf("%v (epoch) is to late to fit into any ids.", epoch)
 	}
-	if instance > biggestStorableInstance {
+	if instance > BiggestStorableInstance {
 		return SnowflakeGenerator{}, fmt.Errorf("%v (nodeid) is to big to fit into any ids.", instance)
 	}
 
