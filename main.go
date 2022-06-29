@@ -7,10 +7,11 @@ import (
 )
 
 type SnowflakeGenerator struct {
-	generatedCount int64
-	generatedMutex sync.Mutex
-	instance       int64
-	epoch          time.Time
+	generatedCount     int64
+	generatedMutex     sync.Mutex
+	LastgeneratedReset int64
+	instance           int64
+	epoch              time.Time
 }
 
 type AsyncReturn struct {
@@ -40,11 +41,28 @@ func NewSnowflakeGenerator(epoch time.Time, instance int64) (SnowflakeGenerator,
 	}
 
 	return SnowflakeGenerator{
-		generatedCount: 0,
-		generatedMutex: sync.Mutex{},
-		instance:       instance,
-		epoch:          epoch,
+		generatedCount:     0,
+		generatedMutex:     sync.Mutex{},
+		LastgeneratedReset: 0,
+		instance:           instance,
+		epoch:              epoch,
 	}, nil
+}
+
+// This function will block if more than 2^12-1 (4095) sequences are requested in a single millisecond.
+func (s *SnowflakeGenerator) getNewSequence() int64 {
+	s.generatedMutex.Lock()
+	sequence := s.generatedCount % resetSequence
+	s.generatedCount++
+	if sequence == 0 {
+		now_unix := time.Now().UnixMilli()
+		if s.LastgeneratedReset == now_unix {
+			time.Sleep(time.Until(time.UnixMilli(now_unix + 1)))
+		}
+		s.LastgeneratedReset = now_unix
+	}
+	s.generatedMutex.Unlock()
+	return sequence
 }
 
 func (s *SnowflakeGenerator) Generate() (int64, error) {
@@ -54,12 +72,9 @@ func (s *SnowflakeGenerator) Generate() (int64, error) {
 		return 0, fmt.Errorf("Now (%v) is before epoch (%v)", now, s.epoch)
 	}
 	if timestamp > (1<<41 - 1) {
-		return 0, fmt.Errorf("41-bit Integer overflow for timestamp. ")
+		return 0, fmt.Errorf("41-bit Integer overflow for timestamp. (%v)", timestamp)
 	}
-	s.generatedMutex.Lock()
-	s.generatedCount++
-	var id int64 = timestamp<<timestapShift | s.instance<<instanceShift | s.generatedCount%resetSequence
-	s.generatedMutex.Unlock()
+	var id int64 = timestamp<<timestapShift | s.instance<<instanceShift | s.getNewSequence()
 	return id, nil
 }
 
@@ -80,6 +95,8 @@ func (s *SnowflakeGenerator) GenerateMultiple(amount int) ([]int64, error) {
 
 func (s *SnowflakeGenerator) internalAsyncGenerate(amount int, returnchannel chan AsyncReturn, wg sync.WaitGroup) {
 	defer wg.Done()
+	defer close(returnchannel)
+
 	for i := 0; i < amount; i++ {
 		id, generateError := s.Generate()
 		if generateError != nil {
