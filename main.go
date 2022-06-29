@@ -28,7 +28,7 @@ const (
 	instanceShift           = timestapShift - instanceLength
 	LatestStorableTime      = (1 << timestampLength) - 1
 	BiggestStorableInstance = (1 << instanceLength) - 1
-	biggestStorableSequence = (1 << sequenceLength) - 1
+	BiggestStorableSequence = (1 << sequenceLength) - 1
 	resetSequence           = 1 << sequenceLength
 )
 
@@ -79,8 +79,8 @@ func (s *SnowflakeGenerator) Generate() (int64, error) {
 }
 
 func (s *SnowflakeGenerator) GenerateMultiple(amount int) ([]int64, error) {
-	if amount > biggestStorableSequence {
-		return make([]int64, 0), fmt.Errorf("Amount %v is to high, only up to %v ids can be generated at once.", amount, biggestStorableSequence)
+	if amount > BiggestStorableSequence {
+		return make([]int64, 0), fmt.Errorf("Amount %v is to high, only up to %v ids can be generated at once.", amount, BiggestStorableSequence)
 	}
 	ids := make([]int64, amount)
 	for i := 0; i < amount; i++ {
@@ -114,8 +114,8 @@ func (s *SnowflakeGenerator) internalAsyncGenerate(amount int, returnchannel cha
 }
 
 func (s *SnowflakeGenerator) AsyncGenerate(amount int) (chan AsyncReturn, sync.WaitGroup, error) {
-	if amount > biggestStorableSequence {
-		return make(chan AsyncReturn, 0), sync.WaitGroup{}, fmt.Errorf("Amount %v is to high, only up to %v ids can be generated at once.", amount, biggestStorableSequence)
+	if amount > BiggestStorableSequence {
+		return make(chan AsyncReturn, 0), sync.WaitGroup{}, fmt.Errorf("Amount %v is to high, only up to %v ids can be generated at once.", amount, BiggestStorableSequence)
 	}
 	returnchannel := make(chan AsyncReturn, amount)
 	wg := sync.WaitGroup{}
