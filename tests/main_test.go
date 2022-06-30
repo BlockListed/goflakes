@@ -45,6 +45,7 @@ func TestGenerate(t *testing.T) {
 		t.Errorf("%v generated not equal to correct id %v", v, correct_id)
 	}
 	t.Logf("%v", v)
+	mock.MockTimeNow = nil
 	return
 }
 
@@ -63,6 +64,7 @@ func TestOverflow(t *testing.T) {
 	if f == nil {
 		t.Error("Generate function let 41-bit time over through.")
 	}
+	mock.MockTimeNow = nil
 }
 
 func TestSequence(t *testing.T) {
