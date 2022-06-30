@@ -102,8 +102,7 @@ func BenchmarkGenerate(b *testing.B) {
 }
 
 func BenchmarkAsyncGenerate1000ids(b *testing.B) {
-	c, w, _ := SnowflakeGenerator.AsyncGenerate(1000)
-	w.Wait()
+	c, _ := SnowflakeGenerator.AsyncGenerate(1000)
 	for {
 		_, ok := <-c
 		if !ok {

@@ -11,7 +11,7 @@ import (
 type SnowflakeGenerator struct {
 	generatedCount     int64
 	generatedMutex     sync.Mutex
-	LastgeneratedReset int64
+	LastgeneratedReset time.Time
 	instance           int64
 	epoch              int64
 }
@@ -29,7 +29,7 @@ func NewSnowflakeGenerator(epoch time.Time, instance int64) (SnowflakeGenerator,
 	return SnowflakeGenerator{
 		generatedCount:     0,
 		generatedMutex:     sync.Mutex{},
-		LastgeneratedReset: 0,
+		LastgeneratedReset: time.Time{},
 		instance:           instance,
 		epoch:              epoch.UnixMilli(),
 	}, nil

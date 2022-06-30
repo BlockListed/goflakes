@@ -1,10 +1,7 @@
 package goflakes
 
 import (
-	"fmt"
 	"sync"
-
-	"github.com/blocklisted/goflakes/constants"
 )
 
 func (s *SnowflakeGenerator) internalAsyncGenerate(amount int, returnchannel chan AsyncReturn, wg sync.WaitGroup) {
@@ -27,13 +24,10 @@ func (s *SnowflakeGenerator) internalAsyncGenerate(amount int, returnchannel cha
 	}
 }
 
-func (s *SnowflakeGenerator) AsyncGenerate(amount int) (chan AsyncReturn, sync.WaitGroup, error) {
-	if amount > constants.BiggestStorableSequence {
-		return make(chan AsyncReturn, 0), sync.WaitGroup{}, fmt.Errorf("Amount %v is to high, only up to %v ids can be generated at once.", amount, constants.BiggestStorableSequence)
-	}
+func (s *SnowflakeGenerator) AsyncGenerate(amount int) (chan AsyncReturn, sync.WaitGroup) {
 	returnchannel := make(chan AsyncReturn, amount)
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	go s.internalAsyncGenerate(amount, returnchannel, wg)
-	return returnchannel, sync.WaitGroup{}, nil
+	return returnchannel, sync.WaitGroup{}
 }

@@ -17,14 +17,9 @@ func (s *SnowflakeGenerator) GetNewSequence(current_unix_time int64) (int64, int
 	s.generatedCount++
 	var new_unix int64
 	if sequence == 0 {
-		now_unix := current_unix_time
-		if s.LastgeneratedReset == now_unix {
-			time.Sleep(time.Millisecond)
-			s.generatedCount++
-			sequence++
-		}
+		time.Sleep(time.Until(s.LastgeneratedReset.Add(time.Millisecond)))
 		new_unix = s.getTimeStamp()
-		s.LastgeneratedReset = new_unix
+		s.LastgeneratedReset = mock.Time_Now()
 	} else {
 		new_unix = current_unix_time
 	}
